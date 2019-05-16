@@ -8,6 +8,7 @@ var GraphQLString = require('graphql').GraphQLString;
 var GraphQLInt = require('graphql').GraphQLInt;
 var GraphQLDate = require('graphql-date');
 var Podcast = require('../models/Podcast');
+var Episode = require('../models/Episode');
 
 var podcastType = new GraphQLObjectType({
   name: 'podcast',
@@ -17,6 +18,16 @@ var podcastType = new GraphQLObjectType({
       description: { type: GraphQLString },
       url: { type: GraphQLString },
       updated_at: { type: GraphQLDate }
+    }
+  }
+});
+
+var episodeType = new GraphQLObjectType({
+  name: 'episode',
+  fields: () => {
+    return {
+      title: { type: GraphQLString },
+      url: { type: GraphQLString }
     }
   }
 });
@@ -38,17 +49,80 @@ var queryType = new GraphQLObjectType({
       },
       podcast: {
         type: podcastType,
+        args: {
+          title: { name: 'title', type: GraphQLString }
+        },
         resolve: (root, params) => {
-          const podcastDetails = Podcast.find({title: params.title}).exec();
+          const podcastDetails = Podcast.findOne({title: params.title}).exec();
           if (!podcastDetails) {
             throw new Error('Error');
           }
 
           return podcastDetails;
         }
+      },
+      episodes: {
+        type: new GraphQLList(episodeType),
+        args: {
+          limit: { name: 'limit', type: GraphQLInt }
+        },
+        resolve: (root, params) => {
+          const limit = params.limit || 10;
+          console.log(limit);
+          const episodes = Episode.find().limit(limit).exec();
+          if (!episodes) {
+            throw new Error('Error');
+          }
+
+          return episodes;
+        }
+      },
+      episode: {
+        type: episodeType,
+        resolve: (root, params) => {
+          const episodeDetails = Episode.find({title: params.title}).exec();
+          if (!episodeDetails) {
+            throw new Error('Error');
+          }
+
+          return null;
+        }
       }
     }
   }
 });
 
-module.exports = new GraphQLSchema({ query: queryType });
+var mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: function () {
+    return {
+      removePodcast: {
+        type: podcastType,
+        args: {
+          title: {
+            type: new GraphQLNonNull(GraphQLString)
+          }
+        },
+        resolve(root, params) {
+          const removePodcast = Podcast.findOneAndRemove({title: params.title}).exec();
+          if (!removePodcast) {
+            throw new Error('Error')
+          }
+          return removePodcast;
+        }
+      },
+      removeAllEpisodes: {
+        type: new GraphQLList(episodeType),
+        resolve(root, params) {
+          const removeEpisodes = Episode.deleteMany({}).exec();
+          if (!removeEpisodes) {
+            throw new Error('Error')
+          }
+          return removeAllEpisodes;
+        }
+      }
+    }
+  }
+});
+
+module.exports = new GraphQLSchema({ query: queryType, mutation: mutation });

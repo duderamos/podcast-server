@@ -7,6 +7,7 @@ var graphqlHTTP = require('express-graphql');
 var schema = require('./graphql/podcastSchema');
 var cors = require('cors');
 var Podcast = require('./models/Podcast');
+var Episode = require('./models/Episode');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -31,21 +32,25 @@ app.get('/populate', async (req, res) => {
   let parser = new Parser();
   let feed = await parser.parseURL('http://www.deviante.com.br/podcasts/micangas/feed/');
 
-  let podcast = Podcast.find({title: feed.title})
+  let podcast = await Podcast.findOne({title: feed.title}).exec();
   if (!podcast) {
-  podcast = new Podcast({title: feed.title,
-                         description: feed.description,
-                         url: feed.link })
-  } else {
-    console.log('here');
-    Podcast.findOneAndUpdate({ title: feed.title }, { description: feed.description, url: feed.link });
-  }
-  if (!podcast.save()) {
-    throw new Error('aaa');
+    podcast = new Podcast({title: feed.title,
+      description: feed.description,
+      url: feed.link })
+    podcast.save();
   }
 
+  feed.items.map(async (item) => {
+    let episode = await Episode.findOne({title: item.title}).exec();
+    if (!episode) {
+      episode = new Episode({title: item.title, url: item.enclosure.url})
+      episode.save();
+    }
+  });
+
   res.setHeader('Content-Type', 'application/json');
-  res.send(podcast);
+  res.status(201);
+  res.send('');
 });
 
 app.use('/graphql', cors(), graphqlHTTP({
