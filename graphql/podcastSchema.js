@@ -6,14 +6,17 @@ var GraphQLNonNull = require('graphql').GraphQLNonNull;
 var GraphQLID = require('graphql').GraphQLID;
 var GraphQLString = require('graphql').GraphQLString;
 var GraphQLInt = require('graphql').GraphQLInt;
+var GraphQLFloat = require('graphql').GraphQLFloat;
 var GraphQLDate = require('graphql-date');
 var Podcast = require('../models/Podcast');
 var Episode = require('../models/Episode');
+var CurrentTime = require('../models/CurrentTime');
 
 var podcastType = new GraphQLObjectType({
   name: 'podcast',
   fields: () => {
     return {
+      _id: { type: GraphQLString },
       title: { type: GraphQLString },
       description: { type: GraphQLString },
       url: { type: GraphQLString },
@@ -26,8 +29,19 @@ var episodeType = new GraphQLObjectType({
   name: 'episode',
   fields: () => {
     return {
+      _id: { type: GraphQLString },
       title: { type: GraphQLString },
       url: { type: GraphQLString }
+    }
+  }
+});
+
+var currentTimeType = new GraphQLObjectType({
+  name: 'currentTime',
+  fields: () => {
+    return {
+      episodeId: { type: GraphQLString },
+      currentTime: { type: GraphQLFloat }
     }
   }
 });
@@ -50,6 +64,7 @@ var queryType = new GraphQLObjectType({
       podcast: {
         type: podcastType,
         args: {
+          _id: { name: '_id', type: GraphQLString },
           title: { name: 'title', type: GraphQLString }
         },
         resolve: (root, params) => {
@@ -78,6 +93,10 @@ var queryType = new GraphQLObjectType({
       },
       episode: {
         type: episodeType,
+        args: {
+          _id: { name: '_id', type: GraphQLString },
+          title: { name: 'title', type: GraphQLString }
+        },
         resolve: (root, params) => {
           const episodeDetails = Episode.find({title: params.title}).exec();
           if (!episodeDetails) {
@@ -85,6 +104,14 @@ var queryType = new GraphQLObjectType({
           }
 
           return null;
+        }
+      },
+      currentTimes: {
+        type: new GraphQLList(currentTimeType),
+        resolve: () => {
+          const currentTimes = CurrentTime.find().exec();
+
+          return currentTimes;
         }
       }
     }
@@ -118,6 +145,18 @@ var mutation = new GraphQLObjectType({
             throw new Error('Error')
           }
           return removeAllEpisodes;
+        }
+      },
+      saveCurrentTime: {
+        type: currentTimeType,
+        args: {
+          episodeId: { name: 'episodeId', type: GraphQLString },
+          currentTime: { name: 'currentTime', type: GraphQLFloat }
+        },
+        resolve(root, params) {
+          const currentTime = new CurrentTime(params);
+          currentTime.save();
+          return currentTime;
         }
       }
     }

@@ -8,6 +8,7 @@ var schema = require('./graphql/podcastSchema');
 var cors = require('cors');
 var Podcast = require('./models/Podcast');
 var Episode = require('./models/Episode');
+var CurrentTime = require('./models/CurrentTime');
 
 mongoose.connect('mongodb://localhost/podcast', { promiseLibrary: require('bluebird'), useNewUrlParser: true })
         .then(() => console.log('connection successful'))
