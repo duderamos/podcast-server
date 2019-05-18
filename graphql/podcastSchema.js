@@ -68,7 +68,6 @@ var queryType = new GraphQLObjectType({
         },
         resolve: (root, params) => {
           const limit = params.limit || 10;
-          console.log(limit);
           const episodes = Episode.find().limit(limit).exec();
           if (!episodes) {
             throw new Error('Error');
