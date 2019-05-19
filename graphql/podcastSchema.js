@@ -31,7 +31,8 @@ var episodeType = new GraphQLObjectType({
     return {
       _id: { type: GraphQLString },
       title: { type: GraphQLString },
-      url: { type: GraphQLString }
+      url: { type: GraphQLString },
+      currentTime: { type: GraphQLFloat }
     }
   }
 });
@@ -81,29 +82,35 @@ var queryType = new GraphQLObjectType({
         args: {
           limit: { name: 'limit', type: GraphQLInt }
         },
-        resolve: (root, params) => {
+        resolve: async (root, params) => {
           const limit = params.limit || 10;
-          const episodes = Episode.find().limit(limit).exec();
-          if (!episodes) {
-            throw new Error('Error');
-          }
+          const episodes = await Episode.find().limit(limit).exec();
+          let result = []
+          result = episodes.map(async (episode, index) => {
+            let currentTime = await CurrentTime.findOne({episodeId: episode._id}).exec();
+            episode.currentTime = currentTime ? currentTime.currentTime : 0;
 
-          return episodes;
+            return episode;
+          });
+
+          return result;
         }
       },
       episode: {
         type: episodeType,
         args: {
-          _id: { name: '_id', type: GraphQLString },
-          title: { name: 'title', type: GraphQLString }
+          _id: { name: '_id', type: GraphQLString }
         },
-        resolve: (root, params) => {
-          const episodeDetails = Episode.find({title: params.title}).exec();
+        resolve: async (root, params) => {
+          const episodeDetails = await Episode.findOne({_id: params._id}).exec();
+          const currentTimeDetails = await CurrentTime.findOne({episodeId: params._id}).exec();
           if (!episodeDetails) {
             throw new Error('Error');
           }
 
-          return null;
+          episodeDetails.currentTime = currentTimeDetails.currentTime;
+
+          return episodeDetails;
         }
       },
       currentTimes: {
@@ -154,6 +161,7 @@ var mutation = new GraphQLObjectType({
           currentTime: { name: 'currentTime', type: GraphQLFloat }
         },
         resolve(root, params) {
+          CurrentTime.deleteMany({ episodeId: params.episodeId }).exec();
           const currentTime = new CurrentTime(params);
           currentTime.save();
           return currentTime;
