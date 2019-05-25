@@ -49,7 +49,7 @@ app.get('/populate', async (req, res) => {
   res.send('');
 });
 
-app.use('/graphql', cors(), graphqlHTTP({
+app.use('/api', cors(), graphqlHTTP({
   schema: schema,
   rootValue: global,
   graphiql: true

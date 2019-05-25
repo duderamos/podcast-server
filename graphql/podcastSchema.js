@@ -32,6 +32,7 @@ var episodeType = new GraphQLObjectType({
       _id: { type: GraphQLString },
       title: { type: GraphQLString },
       url: { type: GraphQLString },
+      duration: { type: GraphQLFloat },
       currentTime: { type: GraphQLFloat }
     }
   }
