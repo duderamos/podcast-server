@@ -41,7 +41,7 @@ app.get('/populate', async (req, res) => {
 
   feed.items.map(async (item) => {
     let episode = await Episode.findOne({title: item.title}).exec();
-    if (!episode && item.url) {
+    if (!episode && item.enclosure.url) {
       episode = new Episode({title: item.title,
         url: item.enclosure.url,
         link: item.link,
