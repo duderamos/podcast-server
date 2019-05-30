@@ -4,8 +4,8 @@ var PodcastSchema = new mongoose.Schema({
   title: String,
   description: String,
   url: String,
-  image_url: String,
-  image_title: String,
+  imageUrl: String,
+  imageTitle: String,
   updated_at: { type: Date, default: Date.now }
 });
 

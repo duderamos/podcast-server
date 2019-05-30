@@ -33,8 +33,8 @@ app.get('/populate', async (req, res) => {
     podcast = new Podcast({title: feed.title,
       description: feed.description,
       url: feed.link,
-      image_url: feed.image.url,
-      image_title: feed.image.title
+      imageUrl: feed.image.url,
+      imageTitle: feed.image.title
     })
     podcast.save();
   }
@@ -48,7 +48,7 @@ app.get('/populate', async (req, res) => {
         pubDate: item.pubDate,
         length: item.enclosure.length,
         categories: item.categories,
-        image_url: item.itunes.image
+        imageUrl: item.itunes.image
       })
       episode.save();
     }

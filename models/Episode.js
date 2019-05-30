@@ -7,7 +7,7 @@ var EpisodeSchema = new mongoose.Schema({
   length: String,
   pubDate: Date,
   categories: [String],
-  image_url: String
+  imageUrl: String
 });
 
 module.exports = mongoose.model('Episode', EpisodeSchema);
