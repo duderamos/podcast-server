@@ -20,7 +20,9 @@ var podcastType = new GraphQLObjectType({
       title: { type: GraphQLString },
       description: { type: GraphQLString },
       url: { type: GraphQLString },
-      updated_at: { type: GraphQLDate }
+      updated_at: { type: GraphQLDate },
+      image_url: { type: GraphQLString },
+      image_title: { type: GraphQLString }
     }
   }
 });
@@ -32,8 +34,12 @@ var episodeType = new GraphQLObjectType({
       _id: { type: GraphQLString },
       title: { type: GraphQLString },
       url: { type: GraphQLString },
-      duration: { type: GraphQLFloat },
-      currentTime: { type: GraphQLFloat }
+      length: { type: GraphQLInt },
+      currentTime: { type: GraphQLFloat },
+      link: { type: GraphQLString },
+      pubDate: { type: GraphQLDate },
+      categories: { type: new GraphQLList(GraphQLString) },
+      image_url: { type: GraphQLString }
     }
   }
 });

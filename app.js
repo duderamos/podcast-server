@@ -26,20 +26,30 @@ app.use('*', cors());
 app.get('/populate', async (req, res) => {
   let Parser = require('rss-parser');
   let parser = new Parser();
-  let feed = await parser.parseURL('http://www.deviante.com.br/podcasts/micangas/feed/');
+  let feed = await parser.parseURL('http://www.deviante.com.br/podcasts/spin/feed/');
 
   let podcast = await Podcast.findOne({title: feed.title}).exec();
   if (!podcast) {
     podcast = new Podcast({title: feed.title,
       description: feed.description,
-      url: feed.link })
+      url: feed.link,
+      image_url: feed.image.url,
+      image_title: feed.image.title
+    })
     podcast.save();
   }
 
   feed.items.map(async (item) => {
     let episode = await Episode.findOne({title: item.title}).exec();
-    if (!episode) {
-      episode = new Episode({title: item.title, url: item.enclosure.url})
+    if (!episode && item.url) {
+      episode = new Episode({title: item.title,
+        url: item.enclosure.url,
+        link: item.link,
+        pubDate: item.pubDate,
+        length: item.enclosure.length,
+        categories: item.categories,
+        image_url: item.itunes.image
+      })
       episode.save();
     }
   });
