@@ -23,42 +23,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('*', cors());
 
-app.get('/populate', async (req, res) => {
-  let Parser = require('rss-parser');
-  let parser = new Parser();
-  let feed = await parser.parseURL('http://www.deviante.com.br/podcasts/spin/feed/');
-
-  let podcast = await Podcast.findOne({title: feed.title}).exec();
-  if (!podcast) {
-    podcast = new Podcast({title: feed.title,
-      description: feed.description,
-      url: feed.link,
-      imageUrl: feed.image.url,
-      imageTitle: feed.image.title
-    })
-    podcast.save();
-  }
-
-  feed.items.map(async (item) => {
-    let episode = await Episode.findOne({title: item.title}).exec();
-    if (!episode && item.enclosure.url) {
-      episode = new Episode({title: item.title,
-        url: item.enclosure.url,
-        link: item.link,
-        pubDate: item.pubDate,
-        length: item.enclosure.length,
-        categories: item.categories,
-        imageUrl: item.itunes.image
-      })
-      episode.save();
-    }
-  });
-
-  res.setHeader('Content-Type', 'application/json');
-  res.status(201);
-  res.send('');
-});
-
 app.use('/api', cors(), graphqlHTTP({
   schema: schema,
   rootValue: global,
