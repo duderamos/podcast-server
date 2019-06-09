@@ -7,7 +7,8 @@ var EpisodeSchema = new mongoose.Schema({
   length: String,
   pubDate: Date,
   categories: [String],
-  imageUrl: String
+  imageUrl: String,
+  podcastId: String,
 });
 
 module.exports = mongoose.model('Episode', EpisodeSchema);

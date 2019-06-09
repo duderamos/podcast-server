@@ -39,7 +39,8 @@ var episodeType = new GraphQLObjectType({
       link: { type: GraphQLString },
       pubDate: { type: GraphQLDate },
       categories: { type: new GraphQLList(GraphQLString) },
-      imageUrl: { type: GraphQLString }
+      imageUrl: { type: GraphQLString },
+      podcastId: { type: GraphQLString },
     }
   }
 });
@@ -87,11 +88,13 @@ var queryType = new GraphQLObjectType({
       episodes: {
         type: new GraphQLList(episodeType),
         args: {
-          limit: { name: 'limit', type: GraphQLInt }
+          limit: { name: 'limit', type: GraphQLInt },
+          podcastId: { name: 'podcastId', type: new GraphQLNonNull(GraphQLString) },
         },
         resolve: async (root, params) => {
           const limit = params.limit || 10;
-          const episodes = await Episode.find().limit(limit).exec();
+          const podcastId = params.podcastId;
+          const episodes = await Episode.find({ podcastId: podcastId }).limit(limit).exec();
           let result = []
           result = episodes.map(async (episode, index) => {
             let currentTime = await CurrentTime.findOne({episodeId: episode._id}).exec();
