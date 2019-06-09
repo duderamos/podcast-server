@@ -38,7 +38,7 @@ var populate = async (url) => {
       title: feed.title,
       description: feed.description,
       url: feed.link,
-      imageUrl: feed.image.url,
+      imageUrl: feed.itunes.image || feed.image.url,
       imageTitle: feed.image.title
     }
 
@@ -62,6 +62,7 @@ var populate = async (url) => {
           link: item.link,
           pubDate: item.pubDate,
           length: item.enclosure.length,
+          url: item.enclosure.url,
           categories: item.categories,
           imageUrl: item.itunes.image,
           podcastId: podcast._id
