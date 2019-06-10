@@ -73,11 +73,10 @@ var queryType = new GraphQLObjectType({
       podcast: {
         type: podcastType,
         args: {
-          _id: { name: '_id', type: GraphQLString },
-          title: { name: 'title', type: GraphQLString }
+          _id: { name: '_id', type: new GraphQLNonNull(GraphQLString) },
         },
         resolve: (root, params) => {
-          const podcastDetails = Podcast.findOne({title: params.title}).exec();
+          const podcastDetails = Podcast.findOne({_id: params._id}).exec();
           if (!podcastDetails) {
             throw new Error('Error');
           }
