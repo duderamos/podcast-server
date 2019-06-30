@@ -9,6 +9,11 @@ var cors = require('cors');
 var Podcast = require('./models/Podcast');
 var Episode = require('./models/Episode');
 var CurrentTime = require('./models/CurrentTime');
+var passport = require('passport');
+var User = require('./models/User');
+var routes = require('./routes/routes');
+
+require('./auth/auth');
 
 mongoose.connect('mongodb://localhost/podcast', { promiseLibrary: require('bluebird'), useNewUrlParser: true })
         .then(() => console.log('connection successful'))
@@ -23,7 +28,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('*', cors());
 
-app.use('/api', cors(), graphqlHTTP({
+app.use('/', routes);
+app.use('/api', cors(), passport.authenticate('jwt', { session: false }), graphqlHTTP({
   schema: schema,
   rootValue: global,
   graphiql: true
