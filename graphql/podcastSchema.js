@@ -90,13 +90,13 @@ var queryType = new GraphQLObjectType({
           limit: { name: 'limit', type: GraphQLInt },
           podcastId: { name: 'podcastId', type: new GraphQLNonNull(GraphQLString) },
         },
-        resolve: async (root, params) => {
+        resolve: async (root, params, context) => {
           const limit = params.limit || 10;
           const podcastId = params.podcastId;
           const episodes = await Episode.find({ podcastId: podcastId }).limit(limit).exec();
           let result = []
           result = episodes.map(async (episode, index) => {
-            let currentTime = await CurrentTime.findOne({episodeId: episode._id}).exec();
+            let currentTime = await CurrentTime.findOne({episodeId: episode._id, userId: context.user._id}).exec();
             episode.currentTime = currentTime ? currentTime.currentTime : 0;
 
             return episode;
@@ -110,9 +110,9 @@ var queryType = new GraphQLObjectType({
         args: {
           _id: { name: '_id', type: GraphQLString }
         },
-        resolve: async (root, params) => {
+        resolve: async (root, params, context) => {
           const episodeDetails = await Episode.findOne({_id: params._id}).exec();
-          const currentTimeDetails = await CurrentTime.findOne({episodeId: params._id}).exec();
+          const currentTimeDetails = await CurrentTime.findOne({episodeId: params._id, userId: context.user._id}).exec();
           if (!episodeDetails) {
             throw new Error('Error');
           }
@@ -169,8 +169,9 @@ var mutation = new GraphQLObjectType({
           episodeId: { name: 'episodeId', type: GraphQLString },
           currentTime: { name: 'currentTime', type: GraphQLFloat }
         },
-        resolve(root, params) {
-          CurrentTime.deleteMany({ episodeId: params.episodeId }).exec();
+        resolve(root, params, context) {
+          CurrentTime.deleteMany({ episodeId: params.episodeId, userId: context.user._id }).exec();
+          params.userId = context.user._id;
           const currentTime = new CurrentTime(params);
           currentTime.save();
           return currentTime;

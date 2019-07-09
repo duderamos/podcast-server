@@ -29,10 +29,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('*', cors());
 
 app.use('/', routes);
-app.use('/api', cors(), passport.authenticate('jwt', { session: false }), graphqlHTTP({
-  schema: schema,
-  rootValue: global,
-  graphiql: true
-}));
+app.use('/api',
+  cors(),
+  passport.authenticate('jwt', { session: false }),
+  graphqlHTTP((req, res, graphQLParams) => ({
+    schema: schema,
+    context: {
+      user: req.user
+    },
+    rootValue: global,
+    graphiql: true
+  }))
+);
 
 module.exports = app;
